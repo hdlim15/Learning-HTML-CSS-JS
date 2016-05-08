@@ -7,15 +7,21 @@
 	<div id="content">
 		<h1 id="Title" style="margin:5px">Default Title</h1>
 		<button id="Editer" onclick="editTitle()" style="visibility:hidden"> Edit </button>
-		<input type="text" id="titleSetter" value="Title">			
-		<button id="Setter" onclick="setTitle()"> Save </button> 
 	</div>
-	<br>
-	<div>
-		<input type="text" id="newHeader" value="Section Title">
-		<button onClick="addSection()"> New Section </button>
-	</div>
-		
+	
+	<!--Using table tag to align both input boxes and buttons.-->
+	<table>
+		<div>
+			<tr>
+				<td><input type="text" onClick="this.value='';" id="titleSetter" value="Title"></td>			
+				<td><button id="Setter" onclick="setTitle()"> Save </button></td>
+			</tr>
+			<tr>
+				<td><input type="text" onClick="this.value='';" id="newHeader" value="Section Title"></td>
+				<td><button onClick="addSection()"> New Section </button></td>
+			</tr>
+		</div>
+	</table>	
 	<script>
 	"use strict"
 	// Sets the title to the value in the text input. Hides the inputs
