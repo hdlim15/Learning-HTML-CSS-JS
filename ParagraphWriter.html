@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Paragraph Writer</title>
+</head>
+<body>
+	<div id="content">
+		<h1 id="Title" style="margin:5px">Default Title</h1>
+		<button id="Editer" onclick="editTitle()" style="visibility:hidden"> Edit </button>
+		<input type="text" id="titleSetter" value="Title">			
+		<button id="Setter" onclick="setTitle()"> Save </button> 
+	</div>
+	<br>
+	<div>
+		<input type="text" id="newHeader" value="Section Title">
+		<button onClick="addSection()"> New Section </button>
+	</div>
+		
+	<script>
+	"use strict"
+	// Sets the title to the value in the text input. Hides the inputs
+	// that set the title and shows an edit button
+	function setTitle() {
+		var x = document.getElementById("titleSetter");
+    	document.getElementById("Title").innerHTML = x.value;	
+		x.style.visibility = "hidden";
+    	document.getElementById("Setter").style.visibility = "hidden";
+    	document.getElementById("Editer").style.visibility = "visible";	
+	}
+    	
+	// Hides the edit button and shows the inputs that set the title
+  	function editTitle() {
+   		document.getElementById("titleSetter").style.visibility = "visible";
+   		document.getElementById("Setter").style.visibility = "visible";
+   		document.getElementById("Editer").style.visibility = "hidden";
+   	}
+    	
+  	// Adds a new section. The title is the text entered in the text input
+   	function addSection() {
+   		var section = document.createElement("div");
+   		var newHead = document.createElement("h2");
+   		var newPar = document.createElement("textarea");
+   		newHead.innerHTML = document.getElementById("newHeader").value;
+   		section.appendChild(newHead);
+   		newPar.rows = "20";
+   		newPar.cols = "100";
+   		newPar.innerHTML = "Type here";
+   		section.appendChild(newPar);
+   		document.getElementById("content").appendChild(section);
+   	}
+	</script>
+</body>
+</html>
