@@ -1,0 +1,207 @@
+<html>
+<head>
+	<title> Poker Hand Identifier </title>
+</head>
+<body>
+	<div id="info">
+		<h1 style="background-color:red; font-size:50px"> Poker Hand Identifier </h1>
+		<p> This is a program that randomly picks five cards from a standard deck of
+		52 cards. It then analyzes what poker hand it has. Ideas for later include:
+			<ul>
+				<li> Sort the cards before displaying (could be an option) </li>
+				<li> Highlight the cards that are important to the hand </li>
+				<li> Deal two random hands and compare them </li>
+				<li> Graphics with pictures of cards </li>
+				
+			</ul>
+		</p>
+	</div>
+	<div>
+		<!--onClick = "runTest()" or "dealHand()". runTest operates 
+			many times and logs the frequency of each hand in the
+			console. dealHand deals a single hand-->
+		<button id="newHand" onclick="runTest()"> New Hand </button>
+		<p id="dealtHand"> </p>
+		<p id="pokerHand"> </p>
+	</div>
+	
+	<script>
+		"use strict";
+		// deals a random of five cards and displays them. then calls identifyHand()
+		function dealHand() {
+			var rankList = [],
+			    suitList = [],
+			    rank = 0,
+			    suit = "",
+			    suits = ["Spades","Hearts","Clubs","Diamonds"],
+			    hand = "",
+			    index = 0;
+			    
+			while (index < 5) {
+				rank = Math.floor(Math.random()*13 + 1);
+ 				suit = suits[Math.floor(Math.random()*4)];
+				if (isDuplicate(rankList,suitList,rank,suit)) continue;
+				
+				rankList[index] = rank;
+				suitList[index] = suit;
+				hand += rankList[index] + " of " + suitList[index] + ", ";
+				index++;
+			}
+			// tidy up the hand string	
+			hand = hand.substring(0,hand.length-2);
+			hand = hand.split("13").join("King");
+			hand = hand.split("12").join("Queen");
+			hand = hand.split("11").join("Jack");
+			hand = hand.split("10").join("temp");
+			hand = hand.split("1").join("Ace");
+			hand = hand.split("temp").join("10");
+			// display
+			document.getElementById("dealtHand").innerHTML = hand;
+			identifyHand(rankList,suitList);
+		}
+		
+		// Checks to see if a card has already been dealt to the hand
+		function isDuplicate (rankList,suitList,rank,suit) {
+		var y = allIndeces(rankList,rank);
+			for (var i=0; i < y.length; i++ ) {
+				if (suitList[y[i]]===suit) return true; 
+			}
+			return false;
+		}
+		
+    // return an array of all indeces of val in arr
+		function allIndeces(arr, val) {
+			var indexes = [], 
+				i = -1;
+    		while ((i = arr.indexOf(val, i+1)) != -1){
+       	 		indexes.push(i);
+   	 		}
+    		return indexes;
+}
+		
+		// identifies the poker hand
+		function identifyHand(ranks, suits) {
+			var pokerHand = document.getElementById("pokerHand");
+			
+			if (isRoyalFlush(ranks,suits)) pokerHand.innerHTML = "Royal Flush";
+			else if (isStraightFlush(ranks,suits)) pokerHand.innerHTML = "Straight Flush";
+			else if (isFourKind(ranks)) pokerHand.innerHTML = "Four of a kind";
+			else if (isFullHouse(ranks)) pokerHand.innerHTML = "Full House";
+			else if (isFlush(suits)) pokerHand.innerHTML = "Flush";
+			else if (isStraight(ranks)) pokerHand.innerHTML = "Straight";
+			else if (isHighCard(ranks)) pokerHand.innerHTML = "High Card";
+			else if (isThreeKind(ranks)) pokerHand.innerHTML = "Three of a kind";
+			else if (isTwoPair(ranks)) pokerHand.innerHTML = "Two Pair";
+			else  pokerHand.innerHTML = "One Pair";
+		}
+		
+		function isRoyalFlush(ranks, suits) {
+			if ( isStraightFlush(ranks,suits) && ranks.indexOf(1)!==-1 && ranks.indexOf(10)!==-1 )
+				return true;
+			return false;
+		}
+		
+		function isStraightFlush(ranks, suits) {
+			if ( isFlush(suits) && isStraight(ranks) )
+				return true;
+			return false;
+		}
+		
+		function isFourKind(ranks) {
+			ranks.sort(function(a, b){return a-b});
+			return ranks[0]===ranks[3] || ranks[1]===ranks[4];
+		}
+		
+		function isFlush(suits) {
+			for (var i=0; i<4; i++) {
+				if ( suits[i] !== suits [i+1] )
+					return false;
+			}
+			return true;
+		}
+    
+		function isStraight(ranks) { 
+			var flag = true;
+			ranks.sort(function(a, b){return a-b});
+			for (var i=0; i<4; i++) {
+				if (ranks[i] + 1 != ranks [i+1]) {
+					flag = false;
+					break;
+				}
+			}
+			if (ranks[0]===1 && ranks[1]===10 && ranks[2]===11 && ranks[3]===12 && 	  ranks[4]===13)
+				flag=true; //10,J,Q,K,A
+			return flag;
+		}
+    
+		function isHighCard(ranks) {
+			ranks[0]===ranks[1]&&ranks[2]===ranks[3]
+			for (var i=0; i<4; i++) {
+				if (ranks[i] === ranks [i+1])
+					return false;
+			}
+			return true;
+		}
+		
+		function isFullHouse(ranks) {
+			return isThreeKind(ranks) && isTwoPair(ranks);
+		}
+		
+		function isThreeKind(ranks) {
+			ranks.sort(function(a, b){return a-b});
+			return ranks[0]===ranks[2] || ranks[1]===ranks[3] || ranks[2]===ranks[4];
+		}
+    
+		function isTwoPair(ranks) {
+			ranks.sort(function(a, b){return a-b});
+			return (ranks[0]===ranks[1]&&ranks[2]===ranks[3]) || 
+				   (ranks[0]===ranks[1]&&ranks[3]===ranks[4]) ||
+				   (ranks[1]===ranks[2]&&ranks[3]===ranks[4]);
+		}
+		
+		//runs the program many times and records the frequency of each hand
+		function runTest() {
+			var RF=0,SF=0,FK=0,F=0,S=0,HC=0,FH=0,TK=0,TP=0,OP=0,
+				runTimes = 100000; //change this to the desired number of dealt hands
+			
+			for (var i=0; i<runTimes; i++) {
+				dealHand();
+				switch ( document.getElementById("pokerHand").innerHTML ) {
+					case "Royal Flush":
+						RF++; break;
+					case "Straight Flush":
+						SF++; break;
+					case "Four of a kind":
+						FK++; break;
+					case "Flush":
+						F++; break;
+					case "Straight":
+						S++; break;
+					case "High Card":
+						HC++; break;
+					case "Full House":
+						FH++; break;
+					case "Three of a kind":
+						TK++; break;
+					case "Two Pair":
+						TP++; break;
+					case "One Pair":
+						OP++; break;
+					default:
+						console.log("Error: Hand was not classified as a poker hand");
+				}
+			}
+			console.log("Royal Flush: " + RF);
+			console.log("Straight Flush: " + SF );
+			console.log("Four of a kind: " + FK );
+			console.log("Full House: " + FH );
+			console.log("Flush: " + F );
+			console.log("Straight: " + S );
+			console.log("Three of a kind: " + TK );
+			console.log("Two Pair: " + TP );
+			console.log("One Pair: " + OP );
+			console.log("High Card: " + HC );
+		}
+	</script>
+</body>
+</html>
