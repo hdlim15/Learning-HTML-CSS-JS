@@ -1,0 +1,33 @@
+* {
+    text-align: center;
+    font-family: "Arial";
+}
+
+body {
+    background-color: azure;
+}
+
+h1 {
+    font-size: 5em;
+    margin-bottom: 1px;
+}
+
+button {
+    width: 200px;
+    height: 60px;
+    font-size: 100%;
+}
+
+img {
+    max-width: 20em;
+    max-height: 20em;
+}
+
+#dealtHand {
+    padding: 0px;
+    margin-top: 50px;
+}
+
+#pokerHand {
+    font-size: 60px;
+}
