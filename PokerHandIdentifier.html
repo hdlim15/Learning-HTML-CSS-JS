@@ -1,27 +1,23 @@
 <html>
 <head>
 	<title> Poker Hand Identifier </title>
+    <link rel="stylesheet" href="styling.css">
 </head>
 <body>
-	<div id="info">
-		<h1 style="background-color:red; font-size:50px"> Poker Hand Identifier </h1>
-		<p> This is a program that randomly picks five cards from a standard deck of
-		52 cards. It then analyzes what poker hand it has. Ideas for later include:
-			<ul>
-				<li> Sort the cards before displaying (could be an option) </li>
-				<li> Highlight the cards that are important to the hand </li>
-				<li> Deal two random hands and compare them </li>
-				<li> Graphics with pictures of cards </li>
-				
-			</ul>
-		</p>
-	</div>
-	<div>
+    <h1> Poker Hand Identifier </h1>
+    <h4> Hyuckin David Lim</h4>
+	<div id="body">
 		<!--onClick = "runTest()" or "dealHand()". runTest operates 
 			many times and logs the frequency of each hand in the
 			console. dealHand deals a single hand-->
 		<button id="newHand" onclick="runTest()"> New Hand </button>
-		<p id="dealtHand"> </p>
+        <div id="dealtHand">
+            <img class="card" id="0">
+            <img class="card" id="1">
+            <img class="card" id="2">
+            <img class="card" id="3">
+            <img class="card" id="4">
+        </div>
 		<p id="pokerHand"> </p>
 	</div>
 	
@@ -29,74 +25,112 @@
 		"use strict";
 		// deals a random of five cards and displays them. then calls identifyHand()
 		function dealHand() {
-			var rankList = [],
-			    suitList = [],
-			    rank = 0,
-			    suit = "",
-			    suits = ["Spades","Hearts","Clubs","Diamonds"],
-			    hand = "",
-			    index = 0;
-			    
+			var cardList = [],
+				card = new Card(0,0),
+				index = 0,
+				rank = 0,
+				suit = 0,
+				suits = ["spades","hearts","clubs","diamonds"],
+				hand="";
+            
+            // undo the highlighted borders from the last hand
+            var cards = document.getElementsByClassName("card");
+            for (var c=0; c<5; c++) {
+                cards[c].style.border="";
+            }
+            
+            // add 5 random cards to the hand. sort from lowest to highest
 			while (index < 5) {
-				rank = Math.floor(Math.random()*13 + 1);
+				rank = Math.floor(Math.random()*13 + 2); //ace == 14
  				suit = suits[Math.floor(Math.random()*4)];
-				if (isDuplicate(rankList,suitList,rank,suit)) continue;
+ 				card = new Card(rank,suit);
+ 				
+				if (isDuplicate(cardList,card)) continue;
 				
-				rankList[index] = rank;
-				suitList[index] = suit;
-				hand += rankList[index] + " of " + suitList[index] + ", ";
+				addCard(cardList,card);
 				index++;
 			}
-			// tidy up the hand string	
-			hand = hand.substring(0,hand.length-2);
-			hand = hand.split("13").join("King");
-			hand = hand.split("12").join("Queen");
-			hand = hand.split("11").join("Jack");
-			hand = hand.split("10").join("temp");
-			hand = hand.split("1").join("Ace");
-			hand = hand.split("temp").join("10");
-			// display
-			document.getElementById("dealtHand").innerHTML = hand;
-			identifyHand(rankList,suitList);
+            
+            for (var i=0; i<5; i++) {
+                document.getElementById(i).src = cardList[i].toString();
+            }
+			
+			var pokerHand = identifyHand(cardList);
+			document.getElementById("pokerHand").innerHTML = pokerHand;
+            
+			return pokerHand;
 		}
 		
+        // constructor for a card object. contains rank, suit, and function toString
+		function Card(rank, suit) {
+    		this.rank = rank;
+    		this.suit = suit;
+    		this.toString = function() {
+       			return this.rank + '_of_' + this.suit + ".png";
+       		}
+   		}
+		
 		// Checks to see if a card has already been dealt to the hand
-		function isDuplicate (rankList,suitList,rank,suit) {
-		var y = allIndeces(rankList,rank);
-			for (var i=0; i < y.length; i++ ) {
-				if (suitList[y[i]]===suit) return true; 
+		function isDuplicate (cardList,card) {
+			for (var c of cardList ) {
+				if (c.rank===card.rank && c.suit===card.suit) return true;
 			}
 			return false;
 		}
-		
-    // return an array of all indeces of val in arr
-		function allIndeces(arr, val) {
-			var indexes = [], 
-				i = -1;
-    		while ((i = arr.indexOf(val, i+1)) != -1){
-       	 		indexes.push(i);
-   	 		}
-    		return indexes;
-}
+        
+        //adds a card to the list, sorting from low to high
+        function addCard (cardList, card) {
+            var temp = cardList;
+            cardList.push(card);
+            for (var i = cardList.length-2; i>=0; i-- ) {
+				if (card.rank >= cardList[i].rank)
+                    break;
+                else {
+                    var temp = cardList[i];
+                    cardList[i] = cardList[i+1];
+                    cardList[i+1] = temp;
+                }
+			}
+        }
 		
 		// identifies the poker hand
-		function identifyHand(ranks, suits) {
-			var pokerHand = document.getElementById("pokerHand");
+		function identifyHand(cards) {
+			var ranks = [],
+				suits = [];
 			
-			if (isRoyalFlush(ranks,suits)) pokerHand.innerHTML = "Royal Flush";
-			else if (isStraightFlush(ranks,suits)) pokerHand.innerHTML = "Straight Flush";
-			else if (isFourKind(ranks)) pokerHand.innerHTML = "Four of a kind";
-			else if (isFullHouse(ranks)) pokerHand.innerHTML = "Full House";
-			else if (isFlush(suits)) pokerHand.innerHTML = "Flush";
-			else if (isStraight(ranks)) pokerHand.innerHTML = "Straight";
-			else if (isHighCard(ranks)) pokerHand.innerHTML = "High Card";
-			else if (isThreeKind(ranks)) pokerHand.innerHTML = "Three of a kind";
-			else if (isTwoPair(ranks)) pokerHand.innerHTML = "Two Pair";
-			else  pokerHand.innerHTML = "One Pair";
+			for (var i = 0; i<5; i++) {
+				ranks[i] = cards[i].rank;
+				suits[i] = cards[i].suit;
+			}	
+            ranks.sort(function(a, b){return a-b});
+            
+			if (isRoyalFlush(ranks,suits)) return "Royal Flush";
+			else if (isStraightFlush(ranks,suits)) return "Straight Flush";
+			else if (isFourKind(ranks)) return "Four of a kind";
+			else if (isFullHouse(ranks)) return "Full House";
+			else if (isFlush(suits)) return "Flush";
+			else if (isStraight(ranks)) return "Straight";
+			else if (isHighCard(ranks)) return "High Card";
+			else if (isThreeKind(ranks)) return "Three of a kind";
+			else if (isTwoPair(ranks)) return "Two Pair";
+			else  { // isOnePair == true
+                for (i=0; i<4; i++) {
+				    if (ranks[i] === ranks [i+1]) {
+                        highlight(i);highlight(i+1);
+                        break;
+				    }
+                }
+                return "One Pair";
+            }
 		}
+        
+        // adds yellow border around the card with index x
+        function highlight(x) {
+            document.getElementById(x).style="border: 6px solid yellow; border-radius:12px;";
+        }
 		
 		function isRoyalFlush(ranks, suits) {
-			if ( isStraightFlush(ranks,suits) && ranks.indexOf(1)!==-1 && ranks.indexOf(10)!==-1 )
+			if ( ranks[0]===1 && ranks[4]===13 && isStraightFlush(ranks,suits) )
 				return true;
 			return false;
 		}
@@ -108,8 +142,15 @@
 		}
 		
 		function isFourKind(ranks) {
-			ranks.sort(function(a, b){return a-b});
-			return ranks[0]===ranks[3] || ranks[1]===ranks[4];
+			if(ranks[0]===ranks[3]) {
+                highlight(0);highlight(1);highlight(2);highlight(3);
+                return true;
+            } 
+            else if(ranks[1]===ranks[4]) {
+                highlight(1);highlight(2);highlight(3);highlight(4);
+                return true;
+            } 
+            return false;
 		}
 		
 		function isFlush(suits) {
@@ -117,29 +158,30 @@
 				if ( suits[i] !== suits [i+1] )
 					return false;
 			}
+            highlight(0);highlight(1);highlight(2);highlight(3);highlight(4);
 			return true;
 		}
     
 		function isStraight(ranks) { 
-			var flag = true;
-			ranks.sort(function(a, b){return a-b});
+			if (ranks[0]===2 && ranks[1]===3 && ranks[2]===4 && ranks[3]===5 && ranks[4]===14) {
+                highlight(0);highlight(1);highlight(2);highlight(3);highlight(4);
+                return true;
+            }
 			for (var i=0; i<4; i++) {
 				if (ranks[i] + 1 != ranks [i+1]) {
-					flag = false;
-					break;
+					return false;
 				}
 			}
-			if (ranks[0]===1 && ranks[1]===10 && ranks[2]===11 && ranks[3]===12 && 	  ranks[4]===13)
-				flag=true; //10,J,Q,K,A
-			return flag;
+            highlight(0);highlight(1);highlight(2);highlight(3);highlight(4);
+			return true;
 		}
     
 		function isHighCard(ranks) {
-			ranks[0]===ranks[1]&&ranks[2]===ranks[3]
 			for (var i=0; i<4; i++) {
 				if (ranks[i] === ranks [i+1])
 					return false;
 			}
+            highlight(4);
 			return true;
 		}
 		
@@ -148,47 +190,55 @@
 		}
 		
 		function isThreeKind(ranks) {
-			ranks.sort(function(a, b){return a-b});
-			return ranks[0]===ranks[2] || ranks[1]===ranks[3] || ranks[2]===ranks[4];
+            if (ranks[0]===ranks[2]) {
+                highlight(0);highlight(1);highlight(2);
+                return true;
+            } 
+            else if (ranks[1]===ranks[3]) {
+                highlight(1);highlight(2);highlight(3);
+                return true;
+            } 
+            else if (ranks[2]===ranks[4]) {
+                highlight(2);highlight(3);highlight(4);
+                return true;
+            } 
+            return false;
 		}
     
 		function isTwoPair(ranks) {
-			ranks.sort(function(a, b){return a-b});
-			return (ranks[0]===ranks[1]&&ranks[2]===ranks[3]) || 
-				   (ranks[0]===ranks[1]&&ranks[3]===ranks[4]) ||
-				   (ranks[1]===ranks[2]&&ranks[3]===ranks[4]);
-		}
+            if (ranks[0]===ranks[1]&&ranks[2]===ranks[3]) {
+                highlight(0);highlight(1);highlight(2);highlight(3);
+                return true;
+            } 
+            else if (ranks[0]===ranks[1]&&ranks[3]===ranks[4]) {
+                highlight(0);highlight(1);highlight(3);highlight(4);
+                return true;
+            } 
+            else if (ranks[1]===ranks[2]&&ranks[3]===ranks[4]) {
+                highlight(1);highlight(2);highlight(3);highlight(4);
+                return true;
+            } 
+            return false;
+        }
 		
 		//runs the program many times and records the frequency of each hand
 		function runTest() {
 			var RF=0,SF=0,FK=0,F=0,S=0,HC=0,FH=0,TK=0,TP=0,OP=0,
-				runTimes = 100000; //change this to the desired number of dealt hands
+				runTimes = 1000000; //change this to the desired number of dealt hands
 			
 			for (var i=0; i<runTimes; i++) {
-				dealHand();
-				switch ( document.getElementById("pokerHand").innerHTML ) {
-					case "Royal Flush":
-						RF++; break;
-					case "Straight Flush":
-						SF++; break;
-					case "Four of a kind":
-						FK++; break;
-					case "Flush":
-						F++; break;
-					case "Straight":
-						S++; break;
-					case "High Card":
-						HC++; break;
-					case "Full House":
-						FH++; break;
-					case "Three of a kind":
-						TK++; break;
-					case "Two Pair":
-						TP++; break;
-					case "One Pair":
-						OP++; break;
-					default:
-						console.log("Error: Hand was not classified as a poker hand");
+				switch ( dealHandTest() ) {
+					case "Royal Flush": RF++; break;
+					case "Straight Flush": SF++; break;
+					case "Four of a kind": FK++; break;
+					case "Flush": F++; break;
+					case "Straight": S++; break;
+					case "High Card": HC++; break;
+					case "Full House": FH++; break;
+					case "Three of a kind": TK++; break;
+					case "Two Pair": TP++; break;
+					case "One Pair": OP++; break;
+					default: console.log("Error: Hand was not classified as a poker hand");
 				}
 			}
 			console.log("Royal Flush: " + RF);
@@ -201,7 +251,28 @@
 			console.log("Two Pair: " + TP );
 			console.log("One Pair: " + OP );
 			console.log("High Card: " + HC );
-		}
+        }
+        
+        //modified dealHand() to be more effective with runTest()
+        function dealHandTest() {
+			var cardList = [],
+				card = new Card(0,0),
+				index = 0,
+				rank = 0,
+				suit = 0;
+				
+			while (index < 5) {
+				rank = Math.floor(Math.random()*13 + 2);
+ 				suit = Math.floor(Math.random()*4 + 1);
+ 				card = new Card(rank,suit);
+ 				
+				if (isDuplicate(cardList,card)) continue;
+				
+				cardList[index] = card;
+				index++;
+			}
+			return identifyHand(cardList);
+        }
 	</script>
 </body>
 </html>
